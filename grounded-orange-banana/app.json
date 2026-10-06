@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "SijjMoviesHub",
+    "slug": "snack-09f85167-d8e8-4959-80df-14904a78b954",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.msukan777.snack09f85167d8e8495980df14904a78b954"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "5a7b6d82-5805-437a-a2e6-54ba382f5cc8"
+      }
+    }
+  }
+}
