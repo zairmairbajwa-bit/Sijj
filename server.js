@@ -1,43 +1,38 @@
 const express = require('express');
 const cors = require('cors');
-const https = require('https');
+const axios = require('axios');
+
 const app = express();
 app.use(cors());
 
-const TMDB_API_KEY = 'cf2293b9c7dc4956214688e3c524d7fb';
+// Bot ka apna internal engine (Aapko koi key manage nahi karni)
+const BOT_ENGINE = '92b418e837b833be308bbfb1fb2aca1e'; 
 const BASE_URL = 'https://api.themoviedb.org/3';
 
-const fetchData = (url) => {
-    return new Promise((resolve, reject) => {
-        https.get(url, (res) => {
-            let data = '';
-            res.on('data', (chunk) => data += chunk);
-            res.on('end', () => {
-                try { resolve(JSON.parse(data)); } 
-                catch (e) { resolve({ error: 'Parsing failed' }); }
-            });
-        }).on('error', (e) => reject({ error: e.message }));
-    });
-};
-
+// 1. Home Page Bot - Sirf Hindi movies nikal kar layega
 app.get('/api/trending', async (req, res) => {
     try {
-        const data = await fetchData(`${BASE_URL}/trending/all/day?api_key=${TMDB_API_KEY}`);
-        res.json(data);
+        const response = await axios.get(`${BASE_URL}/discover/movie?api_key=${BOT_ENGINE}&with_original_language=hi&sort_by=popularity.desc`);
+        res.json(response.data);
     } catch (error) {
-        res.json({ error: 'Fetch failed', details: error });
+        res.json({ results: [] });
     }
 });
 
+// 2. Search Bot - Har kism ki movies aur seasons dhoondega
 app.get('/api/search', async (req, res) => {
     const query = req.query.query;
     if (!query) return res.json({ results: [] });
+    
     try {
-        const data = await fetchData(`${BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${query}`);
-        res.json(data);
+        const response = await axios.get(`${BASE_URL}/search/multi?api_key=${BOT_ENGINE}&query=${query}&language=hi-IN`);
+        res.json(response.data);
     } catch (error) {
-        res.json({ error: 'Fetch failed', details: error });
+        res.json({ results: [] });
     }
 });
 
-app.listen(process.env.PORT || 3000, () => console.log('Server debugging API'));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`MovieBox Bot Server chal raha hai port ${PORT} par`);
+});
