@@ -1,12 +1,13 @@
 {
   "expo": {
-    "extra": {
-      "eas": {
-        "projectId": "f4d69653-71d7-4aee-a41b-fb88ab50beb0"
-      }
-    },
+    "name": "Sijj MovieBox",
+    "slug": "sijj-moviebox",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "icon": "https://img.icons8.com/color/512/netflix.png",
     "android": {
-      "package": "com.msukan777.sijj"
+      "package": "com.sijj.moviebox"
     }
   }
 }
