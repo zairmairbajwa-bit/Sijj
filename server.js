@@ -5,27 +5,25 @@ const axios = require('axios');
 const app = express();
 app.use(cors());
 
-// Bot ka apna internal engine (Aapko koi key manage nahi karni)
 const BOT_ENGINE = '92b418e837b833be308bbfb1fb2aca1e'; 
 const BASE_URL = 'https://api.themoviedb.org/3';
 
-// 1. Home Page Bot - Sirf Hindi movies nikal kar layega
+// 1. Front page par Hollywood aur Bollywood dono ka trending mix (Latest arrivals show honge)
 app.get('/api/trending', async (req, res) => {
     try {
-        const response = await axios.get(`${BASE_URL}/discover/movie?api_key=${BOT_ENGINE}&with_original_language=hi&sort_by=popularity.desc`);
+        const response = await axios.get(`${BASE_URL}/trending/all/day?api_key=${BOT_ENGINE}`);
         res.json(response.data);
     } catch (error) {
         res.json({ results: [] });
     }
 });
 
-// 2. Search Bot - Har kism ki movies aur seasons dhoondega
+// 2. Search Bot (Har kism ki movie, season aur language dhoondne ke liye)
 app.get('/api/search', async (req, res) => {
     const query = req.query.query;
     if (!query) return res.json({ results: [] });
-    
     try {
-        const response = await axios.get(`${BASE_URL}/search/multi?api_key=${BOT_ENGINE}&query=${query}&language=hi-IN`);
+        const response = await axios.get(`${BASE_URL}/search/multi?api_key=${BOT_ENGINE}&query=${query}`);
         res.json(response.data);
     } catch (error) {
         res.json({ results: [] });
@@ -34,5 +32,5 @@ app.get('/api/search', async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`MovieBox Bot Server chal raha hai port ${PORT} par`);
+    console.log(`MovieBox Bot Running on port ${PORT}`);
 });
