@@ -14,9 +14,9 @@ export default function App() {
   const fetchMedia = async (query = '') => {
     setLoading(true);
     try {
-      let url = `https://api.themoviedb.org/3/trending/all/day?api_key=${API_KEY}`;
+      let url = `https://sijj.onrender.com/api/trending`;
       if (query.trim() !== '') {
-        url = `https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${query}`;
+        url = `https://sijj.onrender.com/api/search?query=${query}`;
       }
       const response = await fetch(url);
       const data = await response.json();
