@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, FlatList, TouchableOpacity, Image, Dimensions, ActivityIndicator, ScrollView, BackHandler, Alert } from 'react-native';
+import { StyleSheet, Text, View, TextInput, FlatList, TouchableOpacity, Image, Dimensions, ActivityIndicator, ScrollView, BackHandler, Linking, Alert } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 const screenWidth = Dimensions.get('window').width;
@@ -12,7 +12,6 @@ export default function App() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [season, setSeason] = useState(1);
   const [episode, setEpisode] = useState(1);
-
   const [totalSeasons, setTotalSeasons] = useState(1);
   const [totalEpisodes, setTotalEpisodes] = useState(12);
 
@@ -52,7 +51,6 @@ export default function App() {
     setSelectedItem(item);
     setSeason(1);
     setEpisode(1);
-    
     if (item.media_type === 'tv' || item.first_air_date) {
       try {
         const res = await fetch(`${BOT_URL}/api/tv-details?id=${item.id}`);
@@ -81,9 +79,12 @@ export default function App() {
     } catch (e) { console.log(e); }
   };
 
+  // DOWNLOAD BUTTON LOGIC
   const handleDownload = () => {
-    // Download feature ko next step mein asali file system se jodenge
-    Alert.alert("Download Started", "Yeh movie/episode ab background mein download hone ke liye ready ho raha hai.");
+    const title = selectedItem.title || selectedItem.name;
+    const year = (selectedItem.release_date || selectedItem.first_air_date || '').split('-')[0];
+    Alert.alert("Download Starting", "Movie background downloader mein khul rahi hai...");
+    Linking.openURL(`${BOT_URL}/api/get-video?title=${title}&year=${year}`);
   };
 
   if (selectedItem) {
@@ -109,7 +110,6 @@ export default function App() {
 
     return (
       <View style={styles.playerContainer}>
-        {/* Naya aur Wazah BACK BUTTON */}
         <TouchableOpacity style={styles.backButton} onPress={() => setSelectedItem(null)}>
           <Text style={styles.backText}>← Back to Home</Text>
         </TouchableOpacity>
@@ -134,9 +134,8 @@ export default function App() {
         <ScrollView style={styles.detailsContainer}>
           <Text style={styles.detailTitle}>{selectedItem.title || selectedItem.name}</Text>
           
-          {/* NAYA DOWNLOAD BUTTON */}
           <TouchableOpacity style={styles.downloadBtn} onPress={handleDownload}>
-            <Text style={styles.downloadBtnText}>⬇️ Download Movie</Text>
+            <Text style={styles.downloadBtnText}>⬇️ Download Movie (Hindi)</Text>
           </TouchableOpacity>
           
           <Text style={{color: '#4CAF50', marginBottom: 15, fontWeight: 'bold'}}>Tip: Video player ke andar setting (⚙️) icon se Audio/Subtitles set karein.</Text>
