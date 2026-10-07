@@ -8,6 +8,11 @@
     "android": {
       "package": "com.sijj.moviebox",
       "versionCode": 1
+    },
+    "extra": {
+      "eas": {
+        "projectId": "71591c9f-029c-4f5c-b35d-cb7e6577926a"
+      }
     }
   }
 }
