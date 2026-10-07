@@ -1,57 +1,54 @@
 const express = require('express');
-const cors = require('cors');
 const axios = require('axios');
 const cheerio = require('cheerio');
+const cors = require('cors');
 
 const app = express();
 app.use(cors());
 
-const TMDB_KEY = '92b418e837b833be308bbfb1fb2aca1e'; 
+// Sirf Scraping test karne ke liye naya route
+app.get('/api/get-hindi-link', async (req, res) => {
+    const movieTitle = req.query.title;
+    if (!movieTitle) return res.json({ error: "Movie ka naam zaroori hai" });
 
-app.get('/api/trending', async (req, res) => {
     try {
-        const { data } = await axios.get(`https://api.themoviedb.org/3/trending/all/day?api_key=${TMDB_KEY}`);
-        res.json(data);
-    } catch (error) { res.json({ results: [] }); }
-});
-
-app.get('/api/search', async (req, res) => {
-    if (!req.query.query) return res.json({ results: [] });
-    try {
-        const { data } = await axios.get(`https://api.themoviedb.org/3/search/multi?api_key=${TMDB_KEY}&query=${req.query.query}`);
-        res.json(data);
-    } catch (error) { res.json({ results: [] }); }
-});
-
-app.get('/api/tv-details', async (req, res) => {
-    try {
-        const { data } = await axios.get(`https://api.themoviedb.org/3/tv/${req.query.id}?api_key=${TMDB_KEY}`);
-        res.json(data);
-    } catch (error) { res.json({}); }
-});
-
-app.get('/api/tv-season', async (req, res) => {
-    try {
-        const { data } = await axios.get(`https://api.themoviedb.org/3/tv/${req.query.id}/season/${req.query.season}?api_key=${TMDB_KEY}`);
-        res.json(data);
-    } catch (error) { res.json({}); }
-});
-
-// HINDI DUBBED SCRAPER & DOWNLOAD LINK GENERATOR
-app.get('/api/get-video', async (req, res) => {
-    const { title, year } = req.query;
-    try {
-        // Yeh backend bot Hindi sites (jaise Vegamovies/HDHub) ko background mein scrape karke link banayega.
-        // Download ke liye hum seedha user ko final direct link de denge.
-        const searchQuery = `${title} ${year} hindi dubbed download mp4`.replace(/ /g, '+');
-        const downloadUrl = `https://www.google.com/search?q=${searchQuery}`; 
+        // Step 1: Website par search marna 
+        // Note: Yahan humein kisi aisi site ka link lagana hai jis par sakht security na ho
+        const searchUrl = `https://vegamovies.is/?s=${movieTitle.replace(/ /g, '+')}`;
         
-        // Asal scraping logic yahan run hogi jo direct .mp4 nikalegi (abhi proxy url set hai)
-        res.redirect(downloadUrl);
-    } catch (error) { 
-        res.send("Download link fetch failed."); 
+        // Aksar sites Cloudflare security ki wajah se bots ko block kar deti hain
+        const { data } = await axios.get(searchUrl, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
+        });
+        
+        const $ = cheerio.load(data);
+
+        // Step 2: Pehli movie ka link nikalna (Classes site ke hisab se badalni padengi)
+        const moviePageLink = $('.post-item a').first().attr('href');
+        
+        if (!moviePageLink) {
+            return res.json({ status: "Failed", message: "Movie nahi mili ya block ho gayi" });
+        }
+
+        // Step 3: Movie page ke andar ja kar direct .mp4 ya download button dhoondna
+        const moviePage = await axios.get(moviePageLink);
+        const $$ = cheerio.load(moviePage.data);                  // Asal MP4 link pakarna         const directLink = $$('a.download-btn').attr('href'); 
+
+        res.json({ 
+            status: "Success", 
+            title: movieTitle, 
+            found_page: moviePageLink,
+            direct_mp4_link: directLink || "MP4 button nahi mila" 
+        });
+
+    } catch (error) {
+        res.json({ 
+            status: "Error", 
+            message: "Scraping block ho gayi (Cloudflare ya site down)", 
+            details: error.message 
+        });
     }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Sijj MovieBox Final Server Running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Scraper Server running on port ${PORT}`));
