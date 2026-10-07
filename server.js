@@ -1,54 +1,49 @@
 const express = require('express');
 const axios = require('axios');
-const cheerio = require('cheerio');
 const cors = require('cors');
 
 const app = express();
 app.use(cors());
 
-// Sirf Scraping test karne ke liye naya route
+// Direct MP4 Link nikalne wala naya Unblockable Bot
 app.get('/api/get-hindi-link', async (req, res) => {
     const movieTitle = req.query.title;
     if (!movieTitle) return res.json({ error: "Movie ka naam zaroori hai" });
 
     try {
-        // Step 1: Website par search marna 
-        // Note: Yahan humein kisi aisi site ka link lagana hai jis par sakht security na ho
-        const searchUrl = `https://vegamovies.is/?s=${movieTitle.replace(/ /g, '+')}`;
+        // Archive.org (No Ads, No Cloudflare) se direct movies dhoondna
+        const searchUrl = `https://archive.org/advancedsearch.php?q=title:(${encodeURIComponent(movieTitle)})+AND+mediatype:(movies)&fl[]=identifier,title&sort[]=downloads+desc&rows=5&output=json`;
         
-        // Aksar sites Cloudflare security ki wajah se bots ko block kar deti hain
-        const { data } = await axios.get(searchUrl, {
-            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' }
-        });
+        const { data } = await axios.get(searchUrl);
         
-        const $ = cheerio.load(data);
-
-        // Step 2: Pehli movie ka link nikalna (Classes site ke hisab se badalni padengi)
-        const moviePageLink = $('.post-item a').first().attr('href');
-        
-        if (!moviePageLink) {
-            return res.json({ status: "Failed", message: "Movie nahi mili ya block ho gayi" });
+        if (!data.response || data.response.docs.length === 0) {
+             return res.json({ status: "Failed", message: "Yeh movie abhi database mein nahi hai." });
         }
 
-        // Step 3: Movie page ke andar ja kar direct .mp4 ya download button dhoondna
-        const moviePage = await axios.get(moviePageLink);
-        const $$ = cheerio.load(moviePage.data);                  // Asal MP4 link pakarna         const directLink = $$('a.download-btn').attr('href'); 
-
-        res.json({ 
-            status: "Success", 
-            title: movieTitle, 
-            found_page: moviePageLink,
-            direct_mp4_link: directLink || "MP4 button nahi mila" 
-        });
+        // Pehli movie ka folder pakarna
+        const movieId = data.response.docs[0].identifier;
+        
+        // Us folder ke andar se direct .mp4 file uthana
+        const filesUrl = `https://archive.org/metadata/${movieId}`;
+        const filesData = await axios.get(filesUrl);
+        
+        let mp4File = filesData.data.files.find(file => file.name.endsWith('.mp4'));
+        
+        if(mp4File) {
+            const directLink = `https://archive.org/download/${movieId}/${mp4File.name}`;
+            res.json({ 
+                status: "Success", 
+                title: movieTitle, 
+                direct_mp4_link: directLink 
+            });
+        } else {
+             res.json({ status: "Failed", message: "Movie mili par MP4 format mein nahi hai." });
+        }
 
     } catch (error) {
-        res.json({ 
-            status: "Error", 
-            message: "Scraping block ho gayi (Cloudflare ya site down)", 
-            details: error.message 
-        });
+        res.json({ status: "Error", message: "Server connection fail ho gaya", details: error.message });
     }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Scraper Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Unblockable Scraper running on port ${PORT}`));
