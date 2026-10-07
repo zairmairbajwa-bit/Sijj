@@ -5,14 +5,9 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
-    "icon": "https://img.icons8.com/color/512/netflix.png",
     "android": {
-      "package": "com.sijj.moviebox"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "fcac0077-6d9d-4d38-8d11-312963cf1ee3"
-      }
+      "package": "com.sijj.moviebox",
+      "versionCode": 1
     }
   }
 }

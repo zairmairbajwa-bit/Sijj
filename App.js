@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, FlatList, TouchableOpacity, Image, Dimensions, ActivityIndicator, ScrollView, BackHandler } from 'react-native';
+import { StyleSheet, Text, View, TextInput, FlatList, TouchableOpacity, Image, Dimensions, ActivityIndicator, ScrollView, BackHandler, Alert } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 const screenWidth = Dimensions.get('window').width;
@@ -12,7 +12,7 @@ export default function App() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [season, setSeason] = useState(1);
   const [episode, setEpisode] = useState(1);
-  
+
   const [totalSeasons, setTotalSeasons] = useState(1);
   const [totalEpisodes, setTotalEpisodes] = useState(12);
 
@@ -48,7 +48,6 @@ export default function App() {
     if(text.length === 0) fetchMedia();
   };
 
-  // Direct TMDB ki jagah ab apne Render bot se data layega!
   const handleSelectItem = async (item) => {
     setSelectedItem(item);
     setSeason(1);
@@ -82,11 +81,16 @@ export default function App() {
     } catch (e) { console.log(e); }
   };
 
+  const handleDownload = () => {
+    // Download feature ko next step mein asali file system se jodenge
+    Alert.alert("Download Started", "Yeh movie/episode ab background mein download hone ke liye ready ho raha hai.");
+  };
+
   if (selectedItem) {
     const isTV = selectedItem.media_type === 'tv' || selectedItem.first_air_date;
     const videoUrl = isTV 
-      ? `https://embed.su/embed/tv/${selectedItem.id}/${season}/${episode}`
-      : `https://embed.su/embed/movie/${selectedItem.id}`;
+      ? `https://vidsrc.me/embed/tv?tmdb=${selectedItem.id}&season=${season}&episode=${episode}`
+      : `https://vidsrc.me/embed/movie?tmdb=${selectedItem.id}`;
 
     const INJECTED_JAVASCRIPT = `
       window.open = function() { return null; };
@@ -105,8 +109,9 @@ export default function App() {
 
     return (
       <View style={styles.playerContainer}>
+        {/* Naya aur Wazah BACK BUTTON */}
         <TouchableOpacity style={styles.backButton} onPress={() => setSelectedItem(null)}>
-          <Text style={styles.backText}>← Back to Movies</Text>
+          <Text style={styles.backText}>← Back to Home</Text>
         </TouchableOpacity>
         
         <View style={styles.videoWrapper}>
@@ -119,7 +124,7 @@ export default function App() {
             injectedJavaScript={INJECTED_JAVASCRIPT}
             onShouldStartLoadWithRequest={(request) => {
               const url = request.url;
-              if (url.includes('embed.su') || url.includes('vidsrc')) return true;
+              if (url.includes('vidsrc')) return true;
               if (url.startsWith('about:blank') || url.includes('google') || url.includes('tmdb')) return true;
               return false;
             }}
@@ -128,7 +133,13 @@ export default function App() {
 
         <ScrollView style={styles.detailsContainer}>
           <Text style={styles.detailTitle}>{selectedItem.title || selectedItem.name}</Text>
-          <Text style={{color: '#4CAF50', marginBottom: 15, fontWeight: 'bold'}}>Tip: Video player ke andar Audio (⚙️) icon par click karke 'Hindi' select karein!</Text>
+          
+          {/* NAYA DOWNLOAD BUTTON */}
+          <TouchableOpacity style={styles.downloadBtn} onPress={handleDownload}>
+            <Text style={styles.downloadBtnText}>⬇️ Download Movie</Text>
+          </TouchableOpacity>
+          
+          <Text style={{color: '#4CAF50', marginBottom: 15, fontWeight: 'bold'}}>Tip: Video player ke andar setting (⚙️) icon se Audio/Subtitles set karein.</Text>
           
           {isTV && (
             <View>
@@ -186,12 +197,14 @@ const styles = StyleSheet.create({
   movieTitle: { color: '#fff', fontSize: 14, fontWeight: 'bold', marginTop: 8, paddingHorizontal: 5 },
   badge: { color: '#aaa', fontSize: 12, marginTop: 4 },
   playerContainer: { flex: 1, backgroundColor: '#111', paddingTop: 40 },
-  backButton: { padding: 15, backgroundColor: '#222' },
-  backText: { color: '#e50914', fontSize: 16, fontWeight: 'bold' },
+  backButton: { padding: 15, backgroundColor: '#222', borderBottomWidth: 1, borderBottomColor: '#333' },
+  backText: { color: '#e50914', fontSize: 18, fontWeight: 'bold' },
   videoWrapper: { height: 250, width: '100%', backgroundColor: '#000' },
   webview: { flex: 1 },
   detailsContainer: { padding: 15 },
-  detailTitle: { color: '#fff', fontSize: 22, fontWeight: 'bold', marginBottom: 5 },
+  detailTitle: { color: '#fff', fontSize: 22, fontWeight: 'bold', marginBottom: 10 },
+  downloadBtn: { backgroundColor: '#4CAF50', padding: 12, borderRadius: 8, alignItems: 'center', marginBottom: 15 },
+  downloadBtnText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
   horizontalScroll: { marginBottom: 15 },
   sectionTitle: { color: '#aaa', fontSize: 16, fontWeight: 'bold', marginBottom: 8 },
   epButton: { paddingVertical: 8, paddingHorizontal: 15, backgroundColor: '#333', borderRadius: 5, marginRight: 10 },
