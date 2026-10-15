@@ -4,13 +4,14 @@ const app = express();
 
 app.use(cors());
 
+// Yahan maine Pathaan aur Iron Man ke asal posters ke links laga diye hain
 const moviesData = [
   {
     id: 1,
     title: 'Pathaan (Hindi Dubbed)',
     year: 2023,
     rating: '8.5',
-    large_cover_image: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=300&q=80',
+    large_cover_image: 'https://upload.wikimedia.org/wikipedia/en/c/c3/Pathaan_film_poster.jpg',
     videoUrl: 'https://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4' 
   },
   {
@@ -18,7 +19,7 @@ const moviesData = [
     title: 'Iron Man 1 (Hindi)',
     year: 2008,
     rating: '9.0',
-    large_cover_image: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=300&q=80',
+    large_cover_image: 'https://upload.wikimedia.org/wikipedia/en/0/02/Iron_Man_%282008_film%29_poster.jpg',
     videoUrl: 'https://d23dyxeqlo5psv.cloudfront.net/big_buck_bunny.mp4'
   }
 ];
